@@ -1,16 +1,24 @@
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
 export class MultiEnvStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const vpc = new ec2.Vpc(this, 'MyVPC', {
+      maxAzs: 2
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'MultiEnvQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const securityGroup = new ec2.SecurityGroup(this, 'MySG', {
+      vpc,
+      allowAllOutbound: true
+    });
+
+    const instance = new ec2.Instance(this, 'MyInstance', {
+      vpc,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2023(),
+      securityGroup: securityGroup
+    });
   }
 }
